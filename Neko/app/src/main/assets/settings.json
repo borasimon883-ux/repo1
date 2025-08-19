@@ -1,0 +1,154 @@
+{
+  "version": "1.0.0",
+  "description": "Manus Application Configuration Settings",
+  
+  "network": {
+    "ping_timeout_ms": 3000,
+    "connection_test_concurrent": 5,
+    "url_test_timeout_ms": 10000,
+    "dns_query_timeout_ms": 5000
+  },
+  
+  "dns": {
+    "default_servers": [
+      {
+        "name": "Cloudflare DoH",
+        "url": "https://cloudflare-dns.com/dns-query",
+        "type": "doh",
+        "removable": false
+      },
+      {
+        "name": "Google DoH",
+        "url": "https://dns.google/dns-query",
+        "type": "doh",
+        "removable": false
+      },
+      {
+        "name": "Quad9 DoH",
+        "url": "https://dns.quad9.net/dns-query",
+        "type": "doh",
+        "removable": false
+      },
+      {
+        "name": "Cloudflare DoT",
+        "url": "cloudflare-dns.com",
+        "port": 853,
+        "type": "dot",
+        "removable": false
+      },
+      {
+        "name": "Google DoT",
+        "url": "dns.google",
+        "port": 853,
+        "type": "dot",
+        "removable": false
+      }
+    ],
+    "auto_select_fastest": true,
+    "fallback_to_system": true
+  },
+  
+  "routing": {
+    "iranian_apps_direct": {
+      "enabled": true,
+      "description": "Route Iranian banking and government apps directly",
+      "packages": [
+        "ir.sep.shaparak",
+        "ir.shaparak.shaparak",
+        "ir.resaneh1.resa",
+        "ir.bankmelli.mobile",
+        "ir.banksepah.mobile",
+        "ir.bankpasargad.mobile",
+        "ir.iranbourse.mobile",
+        "ir.post.mobile",
+        "ir.bmi.mobile",
+        "ir.tejarat.mobile",
+        "ir.ghoghnoos.mobile",
+        "ir.bmi.bankmellat",
+        "ir.sbi.mobile"
+      ]
+    },
+    "bypass_lan": true,
+    "bypass_china": false,
+    "block_ads": true
+  },
+  
+  "ui": {
+    "auto_import_clipboard": true,
+    "show_ping_in_ms": true,
+    "auto_scroll_to_top_after_refresh": true,
+    "remove_failed_configs_after_attempts": 3,
+    "show_protocol_colors": true
+  },
+  
+  "protocols": {
+    "shadowsocks": {
+      "enabled": true,
+      "default_method": "aes-256-gcm",
+      "supported_methods": [
+        "aes-256-gcm",
+        "aes-192-gcm",
+        "aes-128-gcm",
+        "chacha20-ietf-poly1305",
+        "xchacha20-ietf-poly1305",
+        "aes-256-ctr",
+        "aes-192-ctr",
+        "aes-128-ctr",
+        "aes-256-cfb",
+        "aes-192-cfb",
+        "aes-128-cfb",
+        "chacha20-ietf",
+        "xchacha20"
+      ]
+    },
+    "vmess": {
+      "enabled": true,
+      "default_security": "auto"
+    },
+    "trojan": {
+      "enabled": true
+    },
+    "hysteria": {
+      "enabled": true,
+      "version": "2"
+    },
+    "tuic": {
+      "enabled": true
+    },
+    "ssh": {
+      "enabled": false,
+      "reason": "Removed for APK size optimization"
+    },
+    "shadowtls": {
+      "enabled": false,
+      "reason": "Removed for APK size optimization"
+    },
+    "naive": {
+      "enabled": false,
+      "reason": "Removed for APK size optimization"
+    }
+  },
+  
+  "updates": {
+    "check_on_startup": true,
+    "auto_download": false,
+    "github_repo": "MatsuriDayo/NekoBoxForAndroid",
+    "update_channel": "stable"
+  },
+  
+  "geo_assets": {
+    "auto_update": true,
+    "update_interval_days": 7,
+    "sources": {
+      "geoip": "https://github.com/v2fly/geoip/releases/latest/download/geoip.dat",
+      "geosite": "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat"
+    }
+  },
+  
+  "advanced": {
+    "enable_debug_logs": false,
+    "max_log_size_kb": 512,
+    "enable_crash_reporting": true,
+    "performance_mode": "balanced"
+  }
+}
