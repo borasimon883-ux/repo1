@@ -298,6 +298,21 @@
     <string name="action_refresh_all">Refresh All</string>
     <string name="refresh_complete">Refresh complete: %d configs tested, %d available</string>
     <string name="refresh_complete_with_duplicates">Refresh complete: %d configs tested, %d available, %d duplicates removed</string>
+    <!-- Smart clipboard import -->
+    <string name="clipboard_import_title">Import from Clipboard</string>
+    <string name="clipboard_import_message">Found proxy configuration in clipboard:\n\n%s\n\nWould you like to import it?</string>
+    <string name="import_button">Import</string>
+    <string name="ignore_button">Ignore</string>
+    <string name="disable_auto_import">Disable Auto-Import</string>
+    <string name="clipboard_import_success">Successfully imported %d configurations</string>
+    <string name="clipboard_import_failed">No valid configurations found</string>
+    <string name="clipboard_import_error">Import failed: %s</string>
+    <string name="auto_import_disabled_message">Auto-import from clipboard disabled</string>
+    <!-- GitHub import -->
+    <string name="github_import_attempting">Attempting GitHub import %d/%d...</string>
+    <string name="github_import_success">Successfully imported %d configurations from GitHub</string>
+    <string name="github_import_failed_all_attempts">Failed to import from GitHub after %d attempts</string>
+    <string name="action_import_github">Import from GitHub</string>
     <string name="no_proxies_found">No proxies found in the link</string>
     <string name="no_proxies_found_in_subscription">No proxies found in the subscription</string>
     <string name="no_proxies_found_in_file">No proxies found in the file</string>

@@ -111,6 +111,7 @@ import org.json.JSONObject
 import libcore.Libcore
 import io.nekohasekai.sagernet.utils.SettingsManager
 import io.nekohasekai.sagernet.utils.ErrorHandler
+import io.nekohasekai.sagernet.utils.GitHubImporter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.net.InetAddress
 import java.net.InetSocketAddress

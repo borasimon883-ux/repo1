@@ -46,6 +46,7 @@ import io.nekohasekai.sagernet.ktx.onMainDispatcher
 import io.nekohasekai.sagernet.ktx.parseProxies
 import io.nekohasekai.sagernet.ktx.readableMessage
 import io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher
+import io.nekohasekai.sagernet.utils.SmartClipboardManager
 import moe.matsuri.nb4a.utils.Util
 
 class MainActivity : ThemedActivity(),
@@ -440,11 +441,24 @@ class MainActivity : ThemedActivity(),
         super.onStop()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Start clipboard monitoring for smart import
+        SmartClipboardManager.startMonitoring(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Stop clipboard monitoring to save resources
+        SmartClipboardManager.stopMonitoring()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         GroupManager.userInterface = null
         DataStore.configurationStore.unregisterChangeListener(this)
         connection.disconnect(this)
+        SmartClipboardManager.stopMonitoring()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
