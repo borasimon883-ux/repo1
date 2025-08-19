@@ -48,9 +48,10 @@
                     <item
                         android:id="@+id/action_new_mieru"
                         android:title="@string/action_mieru" />
-                    <item
-                        android:id="@+id/action_new_naive"
-                        android:title="@string/action_naive" />
+                    <!-- Removed Naive, ShadowTLS, SSH protocols for APK size optimization -->
+                    <!-- <item android:id="@+id/action_new_naive" android:title="@string/action_naive" /> -->
+                    <!-- <item android:id="@+id/action_new_shadowtls" android:title="@string/action_shadowtls" /> -->
+                    <!-- <item android:id="@+id/action_new_ssh" android:title="@string/action_ssh" /> -->
                     <item
                         android:id="@+id/action_new_hysteria"
                         android:title="@string/action_hysteria" />
@@ -58,14 +59,8 @@
                         android:id="@+id/action_new_tuic"
                         android:title="@string/action_tuic" />
                     <item
-                        android:id="@+id/action_new_shadowtls"
-                        android:title="@string/action_shadowtls" />
-                    <item
                         android:id="@+id/action_new_anytls"
                         android:title="@string/action_anytls" />
-                    <item
-                        android:id="@+id/action_new_ssh"
-                        android:title="@string/action_ssh" />
                     <item
                         android:id="@+id/action_new_wg"
                         android:title="@string/action_wireguard" />

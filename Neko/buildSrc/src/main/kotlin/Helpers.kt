@@ -77,6 +77,11 @@ fun Project.setupCommon() {
         buildTypes {
             getByName("release") {
                 isMinifyEnabled = true
+                isShrinkResources = true
+                isDebuggable = false
+                isJniDebuggable = false
+                isPseudoLocalesEnabled = false
+                isRenderscriptDebuggable = false
             }
         }
         compileOptions {

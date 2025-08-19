@@ -415,9 +415,10 @@ class ConfigurationFragment @JvmOverloads constructor(
                 startActivity(Intent(requireActivity(), MieruSettingsActivity::class.java))
             }
 
-            R.id.action_new_naive -> {
-                startActivity(Intent(requireActivity(), NaiveSettingsActivity::class.java))
-            }
+            // Removed protocols for APK size optimization
+            // R.id.action_new_naive -> startActivity(Intent(requireActivity(), NaiveSettingsActivity::class.java))
+            // R.id.action_new_ssh -> startActivity(Intent(requireActivity(), SSHSettingsActivity::class.java))
+            // R.id.action_new_shadowtls -> startActivity(Intent(requireActivity(), ShadowTLSSettingsActivity::class.java))
 
             R.id.action_new_hysteria -> {
                 startActivity(Intent(requireActivity(), HysteriaSettingsActivity::class.java))
@@ -427,16 +428,8 @@ class ConfigurationFragment @JvmOverloads constructor(
                 startActivity(Intent(requireActivity(), TuicSettingsActivity::class.java))
             }
 
-            R.id.action_new_ssh -> {
-                startActivity(Intent(requireActivity(), SSHSettingsActivity::class.java))
-            }
-
             R.id.action_new_wg -> {
                 startActivity(Intent(requireActivity(), WireGuardSettingsActivity::class.java))
-            }
-
-            R.id.action_new_shadowtls -> {
-                startActivity(Intent(requireActivity(), ShadowTLSSettingsActivity::class.java))
             }
 
             R.id.action_new_anytls -> {
