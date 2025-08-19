@@ -2,6 +2,8 @@ package io.nekohasekai.sagernet.ui
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -10,11 +12,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.database.DataStore
+import io.nekohasekai.sagernet.utils.SettingsManager
 import kotlinx.coroutines.*
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.IOException
-import java.util.concurrent.TimeUnit
+import libcore.Libcore
+import org.json.JSONArray
+import java.net.URL
 
 class DohSettingsActivity : AppCompatActivity() {
 
@@ -23,16 +25,12 @@ class DohSettingsActivity : AppCompatActivity() {
     private lateinit var testAllDohServersButton: Button
     private lateinit var selectedDohServerText: TextView
     private lateinit var dohServerAdapter: ArrayAdapter<String>
+    private val latencyMap: MutableMap<String, Int> = mutableMapOf()
     private val defaultDohServers = setOf(
         "https://cloudflare-dns.com/dns-query",
         "https://dns.google/dns-query",
         "https://dns.quad9.net/dns-query"
     )
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(5, TimeUnit.SECONDS)
-        .writeTimeout(5, TimeUnit.SECONDS)
-        .build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +64,20 @@ class DohSettingsActivity : AppCompatActivity() {
 
     private fun loadDohServers() {
         val dohServers = DataStore.dohServersList.toMutableList()
-        dohServerAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, dohServers)
+        dohServerAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, dohServers) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                val url = getItem(position) ?: ""
+                val latency = latencyMap[url]
+                view.text = if (latency == null) url else buildString {
+                    append(url)
+                    append(" (")
+                    append(if (latency >= 0) "${latency}ms" else "Error")
+                    append(")")
+                }
+                return view
+            }
+        }
         dohServerListView.adapter = dohServerAdapter
 
         dohServerListView.setOnItemLongClickListener { _, _, position, _ ->
@@ -104,11 +115,19 @@ class DohSettingsActivity : AppCompatActivity() {
         builder.setPositiveButton("Add") { _, _ ->
             val newDohUrl = input.text.toString().trim()
             if (newDohUrl.isNotEmpty()) {
-                val currentList = DataStore.dohServersList.toMutableSet()
-                currentList.add(newDohUrl)
-                DataStore.dohServersList = currentList
-                dohServerAdapter.add(newDohUrl)
-                dohServerAdapter.notifyDataSetChanged()
+                val isValid = try {
+                    val parsed = URL(newDohUrl)
+                    parsed.protocol == "https"
+                } catch (e: Exception) { false }
+                if (isValid) {
+                    val currentList = DataStore.dohServersList.toMutableSet()
+                    if (!currentList.contains(newDohUrl)) {
+                        currentList.add(newDohUrl)
+                        DataStore.dohServersList = currentList
+                        dohServerAdapter.add(newDohUrl)
+                        dohServerAdapter.notifyDataSetChanged()
+                    }
+                }
             }
         }
         builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
@@ -127,67 +146,67 @@ class DohSettingsActivity : AppCompatActivity() {
 
     private fun testAllDohServers() {
         val servers = DataStore.dohServersList.toList()
-        val results = mutableMapOf<String, Long>()
-
         GlobalScope.launch(Dispatchers.IO) {
-            val deferredResults = servers.map { serverUrl ->
-                async { serverUrl to testDohServer(serverUrl) }
-            }
-            deferredResults.awaitAll().forEach { (serverUrl, latency) ->
-                results[serverUrl] = latency
-            }
-
-            withContext(Dispatchers.Main) {
-                val sortedResults = results.entries.sortedBy { it.value }
-                val updatedServers = mutableListOf<String>()
-                var fastestServer: String? = null
-                var minLatency = Long.MAX_VALUE
-
-                for ((serverUrl, latency) in sortedResults) {
-                    val latencyText = if (latency == -1L) "Error" else "${latency}ms"
-                    updatedServers.add("$serverUrl ($latencyText)")
-
-                    if (latency != -1L && latency < minLatency) {
-                        minLatency = latency
-                        fastestServer = serverUrl
+            try {
+                val hostPorts = servers.mapNotNull { serverUrl ->
+                    try {
+                        val parsed = URL(serverUrl)
+                        val host = parsed.host
+                        val port = if (parsed.port > 0) parsed.port else 443
+                        "$host:$port"
+                    } catch (_: Exception) {
+                        null
                     }
                 }
 
-                dohServerAdapter.clear()
-                dohServerAdapter.addAll(updatedServers)
-                dohServerAdapter.notifyDataSetChanged()
+                if (hostPorts.isEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        latencyMap.clear()
+                        dohServerAdapter.notifyDataSetChanged()
+                        DataStore.dohServers = ""
+                        updateSelectedDohServerText()
+                    }
+                    return@launch
+                }
 
-                if (fastestServer != null) {
-                    DataStore.dohServers = fastestServer!!
+                val timeout = SettingsManager.Network.getPingTimeoutMs()
+                val resultsJson = Libcore.parallelPing(JSONArray(hostPorts).toString(), timeout)
+
+                val resultsArray = JSONArray(resultsJson)
+                val urlToLatency: MutableMap<String, Int> = mutableMapOf()
+
+                var fastestUrl: String? = null
+                var minLatency = Int.MAX_VALUE
+
+                for (i in 0 until resultsArray.length()) {
+                    if (i >= servers.size) break
+                    val url = servers[i]
+                    val result = resultsArray.getJSONObject(i)
+                    val success = result.optBoolean("success", false)
+                    val pingMs = if (success) result.optInt("ping_ms", -1) else -1
+                    urlToLatency[url] = pingMs
+                    if (success && pingMs >= 0 && pingMs < minLatency) {
+                        minLatency = pingMs
+                        fastestUrl = url
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    latencyMap.clear()
+                    latencyMap.putAll(urlToLatency)
+                    dohServerAdapter.notifyDataSetChanged()
+
+                    if (fastestUrl != null && SettingsManager.DNS.shouldAutoSelectFastest()) {
+                        DataStore.dohServers = fastestUrl!!
+                    }
                     updateSelectedDohServerText()
-                } else {
-                    DataStore.dohServers = ""
-                    updateSelectedDohServerText()
+                }
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) {
+                    latencyMap.clear()
+                    dohServerAdapter.notifyDataSetChanged()
                 }
             }
         }
     }
-
-    private suspend fun testDohServer(url: String): Long {
-        return try {
-            val request = Request.Builder()
-                .url(url)
-                .addHeader("Accept", "application/dns-json")
-                .get()
-                .build()
-
-            val startTime = System.currentTimeMillis()
-            val response = client.newCall(request).execute()
-            val endTime = System.currentTimeMillis()
-
-            if (response.isSuccessful) {
-                endTime - startTime
-            } else {
-                -1L // Indicate error
-            }
-        } catch (e: IOException) {
-            -1L // Indicate error
-        }
-    }
 }
-
